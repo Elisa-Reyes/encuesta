@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+
+}
+
+model EncuestaBookie {
+  id                    Int      @id @default(autoincrement())
+  preg1                 Int      @map("preg_1")
+  preg2                 Int      @map("preg_2")
+  preg3                 Int      @map("preg_3")
+  preg4                 Int      @map("preg_4")
+  preg5                 Int      @map("preg_5")
+  preg6                 Int      @map("preg_6")
+  preg7                 Int      @map("preg_7")
+  preg8                 Int      @map("preg_8")
+  preg9                 Int      @map("preg_9")
+  preg10                Int      @map("preg_10")
+  preg11                Int      @map("preg_11")
+  preg12                Int      @map("preg_12")
+  preg13                Int      @map("preg_13")
+  preg14                Int      @map("preg_14")
+  preg15                Int      @map("preg_15")
+  preg16                Int      @map("preg_16")
+  preg17                Int      @map("preg_17")
+  preg18                Int      @map("preg_18")
+  dispositivoPrincipal  String   @map("dispositivo_principal")
+  inconvenienteTecnico  String   @map("inconveniente_tecnico") @db.Text
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@map("encuestas_bookie")
+}

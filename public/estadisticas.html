@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Estadísticas - Encuesta Bookie</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <style>
+      :root {
+        --primary: #2d5f4f;
+        --primary-light: #4a8a73;
+        --accent: #e8a33d;
+        --bg: #f6f4ef;
+        --card: #ffffff;
+        --text: #2b2b2b;
+        --muted: #6b6b6b;
+        --border: #e2ddd2;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding: 0 0 60px;
+      }
+      header {
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-light)
+        );
+        color: white;
+        padding: 40px 20px 30px;
+        text-align: center;
+      }
+      header h1 {
+        margin: 0 0 8px;
+        font-size: 1.8rem;
+      }
+      header p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: -20px auto 0;
+        padding: 0 16px;
+      }
+
+      .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .card-stat {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+      .card-stat .value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+      }
+      .card-stat .label {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      @media (max-width: 800px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .section {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+      .section h2 {
+        font-size: 1.05rem;
+        color: var(--primary);
+        margin-top: 0;
+        margin-bottom: 14px;
+        border-bottom: 2px solid var(--accent);
+        padding-bottom: 8px;
+      }
+      .section.full {
+        grid-column: 1 / -1;
+      }
+      canvas {
+        max-height: 320px;
+      }
+
+      #estado {
+        text-align: center;
+        color: var(--muted);
+        padding: 40px;
+        font-size: 0.95rem;
+      }
+
+      .refresh-btn {
+        display: block;
+        margin: 0 auto 20px;
+        padding: 10px 20px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+      .refresh-btn:hover {
+        background: var(--primary-light);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>📊 Estadísticas - Encuesta Bookie</h1>
+      <p>Resumen de las respuestas de usabilidad</p>
+    </header>
+
+    <div class="container">
+      <button class="refresh-btn" onclick="cargarDatos()">
+        🔄 Actualizar datos
+      </button>
+      <div id="estado">Cargando datos...</div>
+      <div id="contenido" style="display: none">
+        <div class="summary-cards" id="tarjetasResumen"></div>
+
+        <div class="grid">
+          <div class="section full">
+            <h2>
+              Sección 1: Selección y Asignación — promedio por pregunta (1-5)
+            </h2>
+            <canvas id="chartSeccion1"></canvas>
+          </div>
+          <div class="section full">
+            <h2>
+              Sección 2: Monitoreo y Reportes — promedio por pregunta (1-5)
+            </h2>
+            <canvas id="chartSeccion2"></canvas>
+          </div>
+          <div class="section full">
+            <h2>
+              Sección 3: Usabilidad e Interfaz — promedio por pregunta (1-5)
+            </h2>
+            <canvas id="chartSeccion3"></canvas>
+          </div>
+          <div class="section full">
+            <h2>
+              Sección 4: Carga de Trabajo y Errores — promedio por pregunta
+              (1-5)
+            </h2>
+            <canvas id="chartSeccion4"></canvas>
+          </div>
+          <div class="section">
+            <h2>Dispositivo principal utilizado</h2>
+            <canvas id="chartDispositivo"></canvas>
+          </div>
+          <div class="section">
+            <h2>Inconveniente técnico más notorio</h2>
+            <canvas id="chartInconveniente"></canvas>
+          </div>
+          <div class="section full">
+            <h2>Promedio general por sección</h2>
+            <canvas id="chartPromedioSecciones"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let charts = {};
+
+      const seccion1 = [
+        {
+          key: "preg1",
+          label: "P1. Encontrar actividades fue rápido y sencillo",
+        },
+        { key: "preg2", label: "P2. Catálogo fácil de navegar y filtrar" },
+        { key: "preg3", label: "P3. Asignar lectura requiere pocos clics" },
+        { key: "preg4", label: "P4. Instrucciones claras" },
+        { key: "preg5", label: "P5. Fácil programar fechas límite" },
+      ];
+      const seccion2 = [
+        { key: "preg6", label: "P6. Panel muestra avance a simple vista" },
+        {
+          key: "preg7",
+          label: "P7. Estadísticas claras y fáciles de interpretar",
+        },
+        { key: "preg8", label: "P8. Precisión al detectar rezago" },
+        { key: "preg9", label: "P9. Consultar calificaciones es eficiente" },
+        {
+          key: "preg10",
+          label: "P10. Info de progreso limpia y sin saturación",
+        },
+      ];
+      const seccion3 = [
+        { key: "preg11", label: "P11. Uso inmediato sin manual/capacitación" },
+        { key: "preg12", label: "P12. Interfaz consistente" },
+        {
+          key: "preg13",
+          label: "P13. Pasos innecesarios en el flujo (más alto = peor)",
+        },
+        { key: "preg14", label: "P14. Siempre supe en qué sección estaba" },
+        { key: "preg15", label: "P15. Textos, botones e íconos claros" },
+      ];
+      const seccion4 = [
+        {
+          key: "preg16",
+          label: "P16. Menos esfuerzo administrativo que métodos actuales",
+        },
+        {
+          key: "preg17",
+          label: "P17. Confusión sobre el siguiente paso (más alto = peor)",
+        },
+        {
+          key: "preg18",
+          label: "P18. Fácil corregir errores/clics equivocados",
+        },
+      ];
+      const todasSecciones = [
+        { nombre: "Sección 1", preguntas: seccion1 },
+        { nombre: "Sección 2", preguntas: seccion2 },
+        { nombre: "Sección 3", preguntas: seccion3 },
+        { nombre: "Sección 4", preguntas: seccion4 },
+      ];
+
+      async function cargarDatos() {
+        const estado = document.getElementById("estado");
+        const contenido = document.getElementById("contenido");
+        estado.style.display = "block";
+        contenido.style.display = "none";
+        estado.textContent = "Cargando datos...";
+
+        try {
+          const res = await fetch("/api/encuestas");
+          if (!res.ok) throw new Error("Error al obtener datos");
+          const json = await res.json();
+          const encuestas = json.data || [];
+
+          if (encuestas.length === 0) {
+            estado.textContent = "Todavía no hay respuestas registradas.";
+            return;
+          }
+
+          estado.style.display = "none";
+          contenido.style.display = "block";
+          renderTarjetas(encuestas);
+          renderGraficas(encuestas);
+        } catch (err) {
+          estado.textContent = "⚠️ Error al cargar los datos: " + err.message;
+          console.error(err);
+        }
+      }
+
+      function promedio(arr) {
+        const validos = arr.filter((v) => typeof v === "number" && !isNaN(v));
+        if (!validos.length) return 0;
+        return validos.reduce((a, b) => a + b, 0) / validos.length;
+      }
+
+      function contarValores(arr, key) {
+        const conteo = {};
+        arr.forEach((item) => {
+          const val = item[key];
+          if (val === null || val === undefined || val === "") return;
+          conteo[val] = (conteo[val] || 0) + 1;
+        });
+        return conteo;
+      }
+
+      function renderTarjetas(encuestas) {
+        const todasPreguntas = [
+          ...seccion1,
+          ...seccion2,
+          ...seccion3,
+          ...seccion4,
+        ];
+        const promediosGenerales = todasPreguntas.map((p) =>
+          promedio(encuestas.map((e) => e[p.key])),
+        );
+        const promedioGeneral = promedio(promediosGenerales).toFixed(2);
+
+        const dispositivos = contarValores(encuestas, "dispositivoPrincipal");
+        const dispositivoTop = Object.entries(dispositivos).sort(
+          (a, b) => b[1] - a[1],
+        )[0];
+
+        const sinProblemas = encuestas.filter(
+          (e) =>
+            e.inconvenienteTecnico &&
+            e.inconvenienteTecnico.startsWith("Ninguno"),
+        ).length;
+
+        const tarjetas = [
+          { valor: encuestas.length, label: "Respuestas totales" },
+          { valor: promedioGeneral, label: "Promedio general (1-5)" },
+          {
+            valor: dispositivoTop ? dispositivoTop[0] : "N/A",
+            label: "Dispositivo más usado",
+          },
+          {
+            valor: `${sinProblemas}/${encuestas.length}`,
+            label: "Sin inconvenientes técnicos",
+          },
+        ];
+
+        document.getElementById("tarjetasResumen").innerHTML = tarjetas
+          .map(
+            (t) => `
+      <div class="card-stat">
+        <div class="value">${t.valor}</div>
+        <div class="label">${t.label}</div>
+      </div>
+    `,
+          )
+          .join("");
+      }
+
+      function crearGraficaBarras(id, labels, valores, colores) {
+        const ctx = document.getElementById(id);
+        if (charts[id]) charts[id].destroy();
+
+        charts[id] = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [
+              {
+                data: valores,
+                backgroundColor: colores || "#2d5f4f",
+                borderRadius: 6,
+              },
+            ],
+          },
+          options: {
+            indexAxis: "y",
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } },
+            },
+          },
+        });
+      }
+
+      function crearGraficaCircular(id, tipo, datos) {
+        const ctx = document.getElementById(id);
+        if (charts[id]) charts[id].destroy();
+        const labels = Object.keys(datos);
+        const valores = Object.values(datos);
+
+        charts[id] = new Chart(ctx, {
+          type: tipo,
+          data: {
+            labels,
+            datasets: [
+              {
+                data: valores,
+                backgroundColor: [
+                  "#2d5f4f",
+                  "#4a8a73",
+                  "#e8a33d",
+                  "#6b9b8a",
+                  "#c97f2f",
+                  "#8fb9a8",
+                ],
+                borderWidth: 2,
+                borderColor: "#ffffff",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { position: "bottom" } },
+          },
+        });
+      }
+
+      function renderGraficas(encuestas) {
+        crearGraficaBarras(
+          "chartSeccion1",
+          seccion1.map((p) => p.label),
+          seccion1.map((p) =>
+            promedio(encuestas.map((e) => e[p.key])).toFixed(2),
+          ),
+        );
+        crearGraficaBarras(
+          "chartSeccion2",
+          seccion2.map((p) => p.label),
+          seccion2.map((p) =>
+            promedio(encuestas.map((e) => e[p.key])).toFixed(2),
+          ),
+        );
+        crearGraficaBarras(
+          "chartSeccion3",
+          seccion3.map((p) => p.label),
+          seccion3.map((p) =>
+            promedio(encuestas.map((e) => e[p.key])).toFixed(2),
+          ),
+        );
+        crearGraficaBarras(
+          "chartSeccion4",
+          seccion4.map((p) => p.label),
+          seccion4.map((p) =>
+            promedio(encuestas.map((e) => e[p.key])).toFixed(2),
+          ),
+        );
+
+        crearGraficaCircular(
+          "chartDispositivo",
+          "pie",
+          contarValores(encuestas, "dispositivoPrincipal"),
+        );
+        crearGraficaCircular(
+          "chartInconveniente",
+          "doughnut",
+          contarValores(encuestas, "inconvenienteTecnico"),
+        );
+
+        crearGraficaBarras(
+          "chartPromedioSecciones",
+          todasSecciones.map((s) => s.nombre),
+          todasSecciones.map((s) =>
+            promedio(
+              s.preguntas.flatMap((p) => encuestas.map((e) => e[p.key])),
+            ).toFixed(2),
+          ),
+          ["#2d5f4f", "#4a8a73", "#e8a33d", "#c97f2f"],
+        );
+      }
+
+      cargarDatos();
+    </script>
+  </body>
+</html>

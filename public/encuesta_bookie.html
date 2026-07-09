@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Encuesta Bookie para Docentes</title>
+    <style>
+      :root {
+        --primary: #2d5f4f;
+        --primary-light: #4a8a73;
+        --accent: #e8a33d;
+        --bg: #f6f4ef;
+        --card: #ffffff;
+        --text: #2b2b2b;
+        --muted: #6b6b6b;
+        --border: #e2ddd2;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding: 0 0 60px;
+      }
+      header {
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-light)
+        );
+        color: white;
+        padding: 40px 20px 30px;
+        text-align: center;
+      }
+      header h1 {
+        margin: 0 0 8px;
+        font-size: 1.8rem;
+      }
+      header p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+      }
+      form {
+        max-width: 720px;
+        margin: -20px auto 0;
+        padding: 0 16px;
+      }
+      .section {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px 24px 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+      .section h2 {
+        font-size: 1.1rem;
+        color: var(--primary);
+        margin-top: 0;
+        margin-bottom: 4px;
+        border-bottom: 2px solid var(--accent);
+        padding-bottom: 8px;
+      }
+      .section .subtitle {
+        display: block;
+        color: var(--muted);
+        font-size: 0.85rem;
+        margin-bottom: 18px;
+      }
+      .question {
+        margin-bottom: 24px;
+      }
+      .question label.main {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+      }
+      .question small {
+        display: block;
+        color: var(--muted);
+        font-weight: 400;
+        margin-top: 2px;
+      }
+      input[type="text"],
+      select,
+      textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        background: #fbfaf7;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--primary-light);
+        background: #fff;
+      }
+      .options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .option-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: #f0efe9;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 7px 14px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .option-item:hover {
+        background: #e6f0eb;
+      }
+      .option-item input {
+        accent-color: var(--primary);
+        cursor: pointer;
+      }
+      .scale {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 4px;
+      }
+      .scale label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 0.85rem;
+        color: var(--muted);
+        gap: 4px;
+        cursor: pointer;
+        flex: 1;
+      }
+      .scale-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .required {
+        color: #c0392b;
+        margin-left: 3px;
+      }
+      button[type="submit"] {
+        display: block;
+        width: 100%;
+        max-width: 720px;
+        margin: 10px auto 0;
+        padding: 14px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
+      button[type="submit"]:hover {
+        background: var(--primary-light);
+      }
+      #confirmacion {
+        display: none;
+        max-width: 720px;
+        margin: 24px auto;
+        padding: 24px;
+        background: #eaf5ee;
+        border: 1px solid #bfe0cc;
+        border-radius: 12px;
+        text-align: center;
+        color: var(--primary);
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>🧪 Encuesta de Usabilidad Bookie</h1>
+      <p>Evaluación de la experiencia de uso de la plataforma</p>
+    </header>
+
+    <form id="encuestaForm">
+      <div class="section">
+        <h2>Sección 1: Selección y Asignación (Flujo Real)</h2>
+        <span class="subtitle"
+          >1 = Totalmente en desacuerdo · 5 = Totalmente de acuerdo</span
+        >
+
+        <div class="question">
+          <label class="main"
+            >1. Encontrar actividades y lecturas adecuadas para el nivel de mis
+            alumnos fue rápido y sencillo.<span class="required">*</span></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg1" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg1" value="2" />2</label>
+            <label><input type="radio" name="preg1" value="3" />3</label>
+            <label><input type="radio" name="preg1" value="4" />4</label>
+            <label><input type="radio" name="preg1" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+
+        <div class="question">
+          <label class="main"
+            >2. El catálogo de lecturas y actividades ya hechas es fácil de
+            navegar y filtrar.<span class="required">*</span></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg2" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg2" value="2" />2</label>
+            <label><input type="radio" name="preg2" value="3" />3</label>
+            <label><input type="radio" name="preg2" value="4" />4</label>
+            <label><input type="radio" name="preg2" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+
+        <div class="question">
+          <label class="main"
+            >3. El proceso para asignar una lectura/actividad precargada a un
+            grupo requiere muy pocos clics.<span class="required"
+              >*</span
+            ></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg3" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg3" value="2" />2</label>
+            <label><input type="radio" name="preg3" value="3" />3</label>
+            <label><input type="radio" name="preg3" value="4" />4</label>
+            <label><input type="radio" name="preg3" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+
+        <div class="question">
+          <label class="main"
+            >4. Las instrucciones de las actividades ya establecidas son claras
+            tanto para mí como para los estudiantes.<span class="required"
+              >*</span
+            ></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg4" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg4" value="2" />2</label>
+            <label><input type="radio" name="preg4" value="3" />3</label>
+            <label><input type="radio" name="preg4" value="4" />4</label>
+            <label><input type="radio" name="preg4" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+
+        <div class="question">
+          <label class="main"
+            >5. Es fácil programar las fechas límite o los tiempos de entrega de
+            las lecturas.<span class="required">*</span></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg5" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg5" value="2" />2</label>
+            <label><input type="radio" name="preg5" value="3" />3</label>
+            <label><input type="radio" name="preg5" value="4" />4</label>
+            <label><input type="radio" name="preg5" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Sección 2: Monitoreo y Reportes (Métricas de Control)</h2>
+        <span class="subtitle"
+          >1 = Totalmente en desacuerdo · 5 = Totalmente de acuerdo</span
+        >
+
+        <div class="question">
+          <label class="main"
+            >6. El panel de control me permite ver el avance de lectura de los
+            alumnos a simple vista.<span class="required">*</span></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg6" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg6" value="2" />2</label>
+            <label><input type="radio" name="preg6" value="3" />3</label>
+            <label><input type="radio" name="preg6" value="4" />4</label>
+            <label><input type="radio" name="preg6" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+
+        <div class="question">
+          <label class="main"
+            >7. Las estadísticas automáticas que genera la app son claras y
+            fáciles de interpretar.<span class="required">*</span></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg7" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg7" value="2" />2</label>
+            <label><input type="radio" name="preg7" value="3" />3</label>
+            <label><input type="radio" name="preg7" value="4" />4</label>
+            <label><input type="radio" name="preg7" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+
+        <div class="question">
+          <label class="main"
+            >8. La plataforma me muestra con precisión qué alumnos se están
+            quedando atrás en sus lecturas.<span class="required"
+              >*</span
+            ></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg8" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg8" value="2" />2</label>
+            <label><input type="radio" name="preg8" value="3" />3</label>
+            <label><input type="radio" name="preg8" value="4" />4</label>
+            <label><input type="radio" name="preg8" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+
+        <div class="question">
+          <label class="main"
+            >9. Consultar las calificaciones de las actividades ya realizadas
+            por los alumnos es eficiente.<span class="required">*</span></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg9" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg9" value="2" />2</label>
+            <label><input type="radio" name="preg9" value="3" />3</label>
+            <label><input type="radio" name="preg9" value="4" />4</label>
+            <label><input type="radio" name="preg9" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+
+        <div class="question">
+          <label class="main"
+            >10. La información del progreso de los estudiantes se presenta de
+            forma limpia y sin saturación visual.<span class="required"
+              >*</span
+            ></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg10" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg10" value="2" />2</label>
+            <label><input type="radio" name="preg10" value="3" />3</label>
+            <label><input type="radio" name="preg10" value="4" />4</label>
+            <label><input type="radio" name="preg10" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Sección 3: Usabilidad e Interfaz (Métricas Estándar)</h2>
+        <span class="subtitle"
+          >1 = Totalmente en desacuerdo · 5 = Totalmente de acuerdo</span
+        >
+
+        <div class="question">
+          <label class="main"
+            >11. Creo que cualquier maestro podría usar Bookie de inmediato sin
+            necesidad de un manual o capacitación.<span class="required"
+              >*</span
+            ></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg11" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg11" value="2" />2</label>
+            <label><input type="radio" name="preg11" value="3" />3</label>
+            <label><input type="radio" name="preg11" value="4" />4</label>
+            <label><input type="radio" name="preg11" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+
+        <div class="question">
+          <label class="main"
+            >12. La interfaz de la aplicación es consistente y los menús
+            mantienen siempre la misma lógica.<span class="required"
+              >*</span
+            ></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg12" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg12" value="2" />2</label>
+            <label><input type="radio" name="preg12" value="3" />3</label>
+            <label><input type="radio" name="preg12" value="4" />4</label>
+            <label><input type="radio" name="preg12" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+
+        <div class="question">
+          <label class="main"
+            >13. Encontré secciones o pasos innecesarios para el flujo de
+            trabajo de un docente.<span class="required">*</span></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg13" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg13" value="2" />2</label>
+            <label><input type="radio" name="preg13" value="3" />3</label>
+            <label><input type="radio" name="preg13" value="4" />4</label>
+            <label><input type="radio" name="preg13" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+
+        <div class="question">
+          <label class="main"
+            >14. Durante la prueba, siempre supe en qué sección de la plataforma
+            me encontraba.<span class="required">*</span></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg14" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg14" value="2" />2</label>
+            <label><input type="radio" name="preg14" value="3" />3</label>
+            <label><input type="radio" name="preg14" value="4" />4</label>
+            <label><input type="radio" name="preg14" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+
+        <div class="question">
+          <label class="main"
+            >15. Los textos, botones e íconos de la app son visualmente claros y
+            legibles.<span class="required">*</span></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg15" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg15" value="2" />2</label>
+            <label><input type="radio" name="preg15" value="3" />3</label>
+            <label><input type="radio" name="preg15" value="4" />4</label>
+            <label><input type="radio" name="preg15" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Sección 4: Carga de Trabajo y Errores (Esfuerzo Percibido)</h2>
+        <span class="subtitle"
+          >1 = Totalmente en desacuerdo · 5 = Totalmente de acuerdo</span
+        >
+
+        <div class="question">
+          <label class="main"
+            >16. Monitorear la lectura con Bookie requiere menos esfuerzo
+            administrativo que mis métodos actuales.<span class="required"
+              >*</span
+            ></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg16" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg16" value="2" />2</label>
+            <label><input type="radio" name="preg16" value="3" />3</label>
+            <label><input type="radio" name="preg16" value="4" />4</label>
+            <label><input type="radio" name="preg16" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+
+        <div class="question">
+          <label class="main"
+            >17. Durante la prueba de uso, experimenté confusión sobre cuál era
+            el siguiente paso a seguir.<span class="required">*</span></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg17" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg17" value="2" />2</label>
+            <label><input type="radio" name="preg17" value="3" />3</label>
+            <label><input type="radio" name="preg17" value="4" />4</label>
+            <label><input type="radio" name="preg17" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+
+        <div class="question">
+          <label class="main"
+            >18. Si di un clic por error o asigné algo equivocado, el sistema me
+            permitió corregirlo o regresar fácilmente.<span class="required"
+              >*</span
+            ></label
+          >
+          <div class="scale">
+            <label
+              ><input type="radio" name="preg18" value="1" required />1</label
+            >
+            <label><input type="radio" name="preg18" value="2" />2</label>
+            <label><input type="radio" name="preg18" value="3" />3</label>
+            <label><input type="radio" name="preg18" value="4" />4</label>
+            <label><input type="radio" name="preg18" value="5" />5</label>
+          </div>
+          <div class="scale-labels">
+            <span>En desacuerdo</span><span>De acuerdo</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Sección 5: Datos Técnicos y Adopción</h2>
+
+        <div class="question">
+          <label class="main"
+            >19. ¿Cuál fue el dispositivo principal que utilizaste para evaluar
+            la aplicación?<span class="required">*</span></label
+          >
+          <div class="options">
+            <label class="option-item"
+              ><input
+                type="radio"
+                name="dispositivo_principal"
+                value="Computadora"
+                required
+              />
+              Computadora</label
+            >
+            <label class="option-item"
+              ><input
+                type="radio"
+                name="dispositivo_principal"
+                value="Tablet"
+              />
+              Tablet</label
+            >
+            <label class="option-item"
+              ><input
+                type="radio"
+                name="dispositivo_principal"
+                value="Celular"
+              />
+              Celular</label
+            >
+          </div>
+        </div>
+
+        <div class="question">
+          <label class="main"
+            >20. Selecciona el inconveniente técnico más notorio que detectaste
+            al interactuar con la app:<span class="required">*</span></label
+          >
+          <div class="options">
+            <label class="option-item"
+              ><input
+                type="radio"
+                name="inconveniente_tecnico"
+                value="Ninguno, la navegación y las cargas fueron fluidas"
+                required
+              />
+              Ninguno, la navegación y las cargas fueron fluidas</label
+            >
+            <label class="option-item"
+              ><input
+                type="radio"
+                name="inconveniente_tecnico"
+                value="Los reportes o las lecturas tardaron demasiado en cargar"
+              />
+              Los reportes o las lecturas tardaron demasiado en cargar</label
+            >
+            <label class="option-item"
+              ><input
+                type="radio"
+                name="inconveniente_tecnico"
+                value="Fallas de diseño visual (textos encimados, botones desalineados)"
+              />
+              Fallas de diseño visual (textos encimados, botones
+              desalineados)</label
+            >
+            <label class="option-item"
+              ><input
+                type="radio"
+                name="inconveniente_tecnico"
+                value="Botones o secciones que no respondieron al dar clic"
+              />
+              Botones o secciones que no respondieron al dar clic</label
+            >
+          </div>
+        </div>
+      </div>
+
+      <button type="submit">Enviar respuestas</button>
+    </form>
+
+    <div id="confirmacion">
+      ✅ ¡Gracias! Sus respuestas han sido registradas.
+    </div>
+
+    <script>
+      document
+        .getElementById("encuestaForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const data = new FormData(this);
+          const respuestas = {};
+          for (const [key, value] of data.entries()) {
+            respuestas[key] = value;
+          }
+
+          try {
+            const res = await fetch("/api/encuestas", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(respuestas),
+            });
+            if (!res.ok) throw new Error("Error al enviar la encuesta");
+
+            this.style.display = "none";
+            document.getElementById("confirmacion").style.display = "block";
+          } catch (error) {
+            console.error(error);
+            alert("Hubo un error al enviar la encuesta. Intente de nuevo.");
+          }
+        });
+    </script>
+  </body>
+</html>
