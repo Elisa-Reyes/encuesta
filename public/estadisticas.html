@@ -96,6 +96,9 @@
         margin-bottom: 20px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       }
+      .section.full {
+        grid-column: 1 / -1;
+      }
       .section h2 {
         font-size: 1.05rem;
         color: var(--primary);
@@ -104,11 +107,21 @@
         border-bottom: 2px solid var(--accent);
         padding-bottom: 8px;
       }
-      .section.full {
-        grid-column: 1 / -1;
-      }
       canvas {
         max-height: 320px;
+      }
+
+      .respuestas-abiertas {
+        max-height: 250px;
+        overflow-y: auto;
+      }
+      .respuestas-abiertas li {
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.9rem;
+      }
+      .respuestas-abiertas li:last-child {
+        border-bottom: none;
       }
 
       #estado {
@@ -118,9 +131,15 @@
         font-size: 0.95rem;
       }
 
+      .btn-bar {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
       .refresh-btn {
-        display: block;
-        margin: 0 auto 20px;
+        margin: 0;
         padding: 10px 20px;
         background: var(--primary);
         color: white;
@@ -132,48 +151,45 @@
       .refresh-btn:hover {
         background: var(--primary-light);
       }
+      .refresh-btn.excel {
+        background: var(--accent);
+      }
     </style>
   </head>
   <body>
     <header>
-      <h1>📊 Estadísticas - Encuesta Bookie</h1>
-      <p>Resumen de las respuestas de usabilidad</p>
+      <h1>📊 Estadísticas - Encuesta de Usabilidad Bookie</h1>
+      <p>Resumen de las respuestas de los docentes evaluadores</p>
     </header>
 
     <div class="container">
-      <button class="refresh-btn" onclick="cargarDatos()">
-        🔄 Actualizar datos
-      </button>
+      <div class="btn-bar">
+        <button class="refresh-btn" onclick="cargarDatos()">
+          🔄 Actualizar datos
+        </button>
+        <button
+          class="refresh-btn excel"
+          onclick="window.location.href = '/api/encuestas/excel'"
+        >
+          📥 Descargar Excel
+        </button>
+      </div>
+
       <div id="estado">Cargando datos...</div>
       <div id="contenido" style="display: none">
         <div class="summary-cards" id="tarjetasResumen"></div>
 
+        <div class="section full">
+          <h2>Promedio por pregunta (escala 1-5)</h2>
+          <canvas id="chartPromedioPreguntas"></canvas>
+        </div>
+
+        <div class="section full">
+          <h2>Promedio por sección</h2>
+          <canvas id="chartSecciones"></canvas>
+        </div>
+
         <div class="grid">
-          <div class="section full">
-            <h2>
-              Sección 1: Selección y Asignación — promedio por pregunta (1-5)
-            </h2>
-            <canvas id="chartSeccion1"></canvas>
-          </div>
-          <div class="section full">
-            <h2>
-              Sección 2: Monitoreo y Reportes — promedio por pregunta (1-5)
-            </h2>
-            <canvas id="chartSeccion2"></canvas>
-          </div>
-          <div class="section full">
-            <h2>
-              Sección 3: Usabilidad e Interfaz — promedio por pregunta (1-5)
-            </h2>
-            <canvas id="chartSeccion3"></canvas>
-          </div>
-          <div class="section full">
-            <h2>
-              Sección 4: Carga de Trabajo y Errores — promedio por pregunta
-              (1-5)
-            </h2>
-            <canvas id="chartSeccion4"></canvas>
-          </div>
           <div class="section">
             <h2>Dispositivo principal utilizado</h2>
             <canvas id="chartDispositivo"></canvas>
@@ -182,10 +198,6 @@
             <h2>Inconveniente técnico más notorio</h2>
             <canvas id="chartInconveniente"></canvas>
           </div>
-          <div class="section full">
-            <h2>Promedio general por sección</h2>
-            <canvas id="chartPromedioSecciones"></canvas>
-          </div>
         </div>
       </div>
     </div>
@@ -193,59 +205,12 @@
     <script>
       let charts = {};
 
-      const seccion1 = [
-        {
-          key: "preg1",
-          label: "P1. Encontrar actividades fue rápido y sencillo",
-        },
-        { key: "preg2", label: "P2. Catálogo fácil de navegar y filtrar" },
-        { key: "preg3", label: "P3. Asignar lectura requiere pocos clics" },
-        { key: "preg4", label: "P4. Instrucciones claras" },
-        { key: "preg5", label: "P5. Fácil programar fechas límite" },
-      ];
-      const seccion2 = [
-        { key: "preg6", label: "P6. Panel muestra avance a simple vista" },
-        {
-          key: "preg7",
-          label: "P7. Estadísticas claras y fáciles de interpretar",
-        },
-        { key: "preg8", label: "P8. Precisión al detectar rezago" },
-        { key: "preg9", label: "P9. Consultar calificaciones es eficiente" },
-        {
-          key: "preg10",
-          label: "P10. Info de progreso limpia y sin saturación",
-        },
-      ];
-      const seccion3 = [
-        { key: "preg11", label: "P11. Uso inmediato sin manual/capacitación" },
-        { key: "preg12", label: "P12. Interfaz consistente" },
-        {
-          key: "preg13",
-          label: "P13. Pasos innecesarios en el flujo (más alto = peor)",
-        },
-        { key: "preg14", label: "P14. Siempre supe en qué sección estaba" },
-        { key: "preg15", label: "P15. Textos, botones e íconos claros" },
-      ];
-      const seccion4 = [
-        {
-          key: "preg16",
-          label: "P16. Menos esfuerzo administrativo que métodos actuales",
-        },
-        {
-          key: "preg17",
-          label: "P17. Confusión sobre el siguiente paso (más alto = peor)",
-        },
-        {
-          key: "preg18",
-          label: "P18. Fácil corregir errores/clics equivocados",
-        },
-      ];
-      const todasSecciones = [
-        { nombre: "Sección 1", preguntas: seccion1 },
-        { nombre: "Sección 2", preguntas: seccion2 },
-        { nombre: "Sección 3", preguntas: seccion3 },
-        { nombre: "Sección 4", preguntas: seccion4 },
-      ];
+      const SECCIONES = {
+        "Selección y Asignación": [1, 2, 3, 4, 5],
+        "Monitoreo y Reportes": [6, 7, 8, 9, 10],
+        "Usabilidad e Interfaz": [11, 12, 13, 14, 15],
+        "Carga de Trabajo y Errores": [16, 17, 18],
+      };
 
       async function cargarDatos() {
         const estado = document.getElementById("estado");
@@ -276,9 +241,8 @@
       }
 
       function promedio(arr) {
-        const validos = arr.filter((v) => typeof v === "number" && !isNaN(v));
-        if (!validos.length) return 0;
-        return validos.reduce((a, b) => a + b, 0) / validos.length;
+        if (!arr.length) return 0;
+        return arr.reduce((a, b) => a + b, 0) / arr.length;
       }
 
       function contarValores(arr, key) {
@@ -292,37 +256,47 @@
       }
 
       function renderTarjetas(encuestas) {
-        const todasPreguntas = [
-          ...seccion1,
-          ...seccion2,
-          ...seccion3,
-          ...seccion4,
-        ];
-        const promediosGenerales = todasPreguntas.map((p) =>
-          promedio(encuestas.map((e) => e[p.key])),
+        const totalPreguntas = 18;
+        let sumaGeneral = 0;
+        encuestas.forEach((e) => {
+          for (let i = 1; i <= totalPreguntas; i++)
+            sumaGeneral += e[`preg${i}`] || 0;
+        });
+        const promedioGeneral = (
+          sumaGeneral /
+          (encuestas.length * totalPreguntas)
+        ).toFixed(2);
+
+        const promediosPreguntas = Array.from(
+          { length: totalPreguntas },
+          (_, i) => promedio(encuestas.map((e) => e[`preg${i + 1}`])),
         );
-        const promedioGeneral = promedio(promediosGenerales).toFixed(2);
+        const mejorIdx = promediosPreguntas.indexOf(
+          Math.max(...promediosPreguntas),
+        );
+        const peorIdx = promediosPreguntas.indexOf(
+          Math.min(...promediosPreguntas),
+        );
 
-        const dispositivos = contarValores(encuestas, "dispositivoPrincipal");
-        const dispositivoTop = Object.entries(dispositivos).sort(
-          (a, b) => b[1] - a[1],
-        )[0];
-
-        const sinProblemas = encuestas.filter(
+        const sinInconvenientes = encuestas.filter(
           (e) =>
-            e.inconvenienteTecnico &&
-            e.inconvenienteTecnico.startsWith("Ninguno"),
+            e.inconvenienteTecnico ===
+            "Ninguno, la navegación y las cargas fueron fluidas",
         ).length;
 
         const tarjetas = [
           { valor: encuestas.length, label: "Respuestas totales" },
           { valor: promedioGeneral, label: "Promedio general (1-5)" },
           {
-            valor: dispositivoTop ? dispositivoTop[0] : "N/A",
-            label: "Dispositivo más usado",
+            valor: `Preg ${mejorIdx + 1}`,
+            label: `Mejor calificada (${promediosPreguntas[mejorIdx].toFixed(1)})`,
           },
           {
-            valor: `${sinProblemas}/${encuestas.length}`,
+            valor: `Preg ${peorIdx + 1}`,
+            label: `Peor calificada (${promediosPreguntas[peorIdx].toFixed(1)})`,
+          },
+          {
+            valor: `${sinInconvenientes}/${encuestas.length}`,
             label: "Sin inconvenientes técnicos",
           },
         ];
@@ -339,38 +313,9 @@
           .join("");
       }
 
-      function crearGraficaBarras(id, labels, valores, colores) {
+      function crearGrafica(id, tipo, labels, valores, colores) {
         const ctx = document.getElementById(id);
         if (charts[id]) charts[id].destroy();
-
-        charts[id] = new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels,
-            datasets: [
-              {
-                data: valores,
-                backgroundColor: colores || "#2d5f4f",
-                borderRadius: 6,
-              },
-            ],
-          },
-          options: {
-            indexAxis: "y",
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-              x: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } },
-            },
-          },
-        });
-      }
-
-      function crearGraficaCircular(id, tipo, datos) {
-        const ctx = document.getElementById(id);
-        if (charts[id]) charts[id].destroy();
-        const labels = Object.keys(datos);
-        const valores = Object.values(datos);
 
         charts[id] = new Chart(ctx, {
           type: tipo,
@@ -379,76 +324,96 @@
             datasets: [
               {
                 data: valores,
-                backgroundColor: [
+                backgroundColor: colores || [
                   "#2d5f4f",
                   "#4a8a73",
                   "#e8a33d",
                   "#6b9b8a",
                   "#c97f2f",
                   "#8fb9a8",
+                  "#d4a24a",
                 ],
-                borderWidth: 2,
+                borderRadius: tipo === "bar" ? 6 : 0,
+                borderWidth: tipo === "pie" || tipo === "doughnut" ? 2 : 0,
                 borderColor: "#ffffff",
               },
             ],
           },
           options: {
             responsive: true,
-            plugins: { legend: { position: "bottom" } },
+            indexAxis:
+              tipo === "bar" && id === "chartPromedioPreguntas" ? "y" : "x",
+            plugins: {
+              legend: {
+                display: tipo === "pie" || tipo === "doughnut",
+                position: "bottom",
+              },
+            },
+            scales:
+              tipo === "bar"
+                ? {
+                    x:
+                      id === "chartPromedioPreguntas"
+                        ? { min: 0, max: 5 }
+                        : { beginAtZero: true },
+                    y:
+                      id === "chartPromedioPreguntas"
+                        ? {}
+                        : {
+                            beginAtZero: true,
+                            max: id === "chartSecciones" ? 5 : undefined,
+                          },
+                  }
+                : {},
           },
         });
       }
 
       function renderGraficas(encuestas) {
-        crearGraficaBarras(
-          "chartSeccion1",
-          seccion1.map((p) => p.label),
-          seccion1.map((p) =>
-            promedio(encuestas.map((e) => e[p.key])).toFixed(2),
-          ),
+        const labelsPreguntas = Array.from(
+          { length: 18 },
+          (_, i) => `Preg ${i + 1}`,
         );
-        crearGraficaBarras(
-          "chartSeccion2",
-          seccion2.map((p) => p.label),
-          seccion2.map((p) =>
-            promedio(encuestas.map((e) => e[p.key])).toFixed(2),
-          ),
+        const promediosPreguntas = labelsPreguntas.map((_, i) =>
+          promedio(encuestas.map((e) => e[`preg${i + 1}`])).toFixed(2),
         );
-        crearGraficaBarras(
-          "chartSeccion3",
-          seccion3.map((p) => p.label),
-          seccion3.map((p) =>
-            promedio(encuestas.map((e) => e[p.key])).toFixed(2),
-          ),
-        );
-        crearGraficaBarras(
-          "chartSeccion4",
-          seccion4.map((p) => p.label),
-          seccion4.map((p) =>
-            promedio(encuestas.map((e) => e[p.key])).toFixed(2),
-          ),
+        crearGrafica(
+          "chartPromedioPreguntas",
+          "bar",
+          labelsPreguntas,
+          promediosPreguntas,
         );
 
-        crearGraficaCircular(
+        const labelsSecciones = Object.keys(SECCIONES);
+        const promediosSecciones = labelsSecciones.map((sec) => {
+          const preguntas = SECCIONES[sec];
+          const valores = [];
+          encuestas.forEach((e) =>
+            preguntas.forEach((p) => valores.push(e[`preg${p}`])),
+          );
+          return promedio(valores).toFixed(2);
+        });
+        crearGrafica(
+          "chartSecciones",
+          "bar",
+          labelsSecciones,
+          promediosSecciones,
+        );
+
+        const dispositivo = contarValores(encuestas, "dispositivoPrincipal");
+        crearGrafica(
           "chartDispositivo",
           "pie",
-          contarValores(encuestas, "dispositivoPrincipal"),
-        );
-        crearGraficaCircular(
-          "chartInconveniente",
-          "doughnut",
-          contarValores(encuestas, "inconvenienteTecnico"),
+          Object.keys(dispositivo),
+          Object.values(dispositivo),
         );
 
-        crearGraficaBarras(
-          "chartPromedioSecciones",
-          todasSecciones.map((s) => s.nombre),
-          todasSecciones.map((s) =>
-            promedio(
-              s.preguntas.flatMap((p) => encuestas.map((e) => e[p.key])),
-            ).toFixed(2),
-          ),
-          ["#2d5f4f", "#4a8a73", "#e8a33d", "#c97f2f"],
+        const inconveniente = contarValores(encuestas, "inconvenienteTecnico");
+        crearGrafica(
+          "chartInconveniente",
+          "bar",
+          Object.keys(inconveniente),
+          Object.values(inconveniente),
         );
       }
 
